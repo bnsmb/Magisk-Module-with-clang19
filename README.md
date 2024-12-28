@@ -5,7 +5,7 @@ To create the ZIP file with the Magisk Module, clone or download the repository 
 ```
 ./create_zip.sh 
 ```
-for the repository
+from the repository
 
 
 **Short documentation for the Magisk Module with clang 19**
