@@ -1,0 +1,28 @@
+# 
+#
+# Magisk init script for the service
+# 
+# History
+#   31.10.2024 /bs
+#     initial release
+#     
+#
+
+MODPATH="$(dirname $0)"
+
+MODULE_NAME="$( grep "^id=" $MODPATH/module.prop  | cut -f2 -d "=" )"
+
+# -----------------------------------------------------------------------------
+#
+if [ 0 = 1 -o -r /data/local/tmp/debug ] ; then
+  LOGFILE="/data/local/tmp/${MODULE_NAME}_service.log"
+
+#  echo "Writing all messages to the log file ${LOGFILE}"
+
+  exec 1>"${LOGFILE}" 2>&1
+  set -x
+fi
+
+# -----
+
+

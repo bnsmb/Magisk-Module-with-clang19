@@ -1,0 +1,74 @@
+This Magisk module contains clang19, GNU make 4.4.1, pkg-config 0.29, and the files necessary from the Android NDK r27b for arm64 CPUs
+
+
+The clang19 files are in the directory 
+
+/system/usr/clang19
+
+
+The clang19, make, and pkg-config binaries are in the directory
+
+/system/usr/clang19/bin
+
+
+The files from the NDK are in the directory
+
+/system/usr/ndk/r27b
+
+The sysroot from the NDK is in the directory
+
+/system/usr/ndk/r27b/sysroot
+
+
+Use 
+
+. /system/bin/init_clang19_env
+
+to init the environment for the clang19. This scripts defines all necessary environment variables (including the PATH variable) to use the clang.
+
+
+Source Code used to create the binaries
+---------------------------------------
+
+The repo with the source code for the clang is:
+
+https://android.googlesource.com/toolchain/llvm-project
+
+The source code was checked out in 10/2024
+
+See the file 
+
+source/myconfigure 
+
+in the Magisk Module for the cmake options used to prepare the build process for the clang19.
+The clang19 binaries were compiled on a machine running the Linux OS with Cross Compiler from the Android NDK r27b
+
+
+The Android NDKs are available here:
+
+https://developer.android.com/ndk/downloads
+
+
+The source code for the make binary is available here:
+
+https://ftp.gnu.org/gnu/make/:0
+
+
+The source code for pkg-config is avialable here:
+
+https://pkgconfig.freedesktop.org/releases/
+
+
+History
+
+01.11.2024 v1.0.0
+  initial release
+
+11.11.2024 v1.0.1
+  instructions for the examples in customize.sh corrected
+  the script init_clang19_env now sets the variable TMP if /tmp does not exist
+
+12.11.2024 v1.0.2
+  the contents of the environment variable CXX set in init_clang19_env was wrong -- fixed
+
+ 

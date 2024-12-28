@@ -1,0 +1,7 @@
+id=clang19
+name=clang19 with ndk r27b
+version=19.0.0git-v1.0.2
+versionCode=3
+author=Bernd.Schemmer@gmx.de
+description=clang19, make, pkg-config, and the sysroot from the NDK r27b for Android
+

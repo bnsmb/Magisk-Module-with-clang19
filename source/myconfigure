@@ -1,0 +1,81 @@
+__TRUE=0
+__FALSE=1
+
+ERRORS_FOUND=${__FALSE}
+
+export NDK=/data/develop/android/android-ndk-r27b/
+export TOOLCHAIN=$NDK/toolchains/llvm/prebuilt/linux-x86_64/
+export NDK_PATH=$NDK
+
+export TARGET=aarch64-linux-android
+export API=28
+
+# these are the directories with the include files and libraries necessary to compile the clang binaries and files
+#
+export LDFLAGS="-L/data/develop/android/sysroot/usr/lib" 
+export CFLAGS="-I/data/develop/android/sysroot/usr/include/"
+
+export PATH=$NDK_PATH/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH
+
+# check if the neccessary files to compile the clang binaries with zstd support exist
+# (libraries from the Android NKD are built usoing zstd compression and can not be used if the linker does not support zstd)
+#
+if [ ! -r $TOOLCHAIN/sysroot/usr/include/zstd.h ] ; then
+  echo "WARNING: The file $TOOLCHAIN/sysroot/usr/include/zstd.h is required for zstd support but missing"
+  ERRORS_FOUND=${__TRUE}
+fi
+
+if [ ! -r $TOOLCHAIN/sysroot/usr/lib/aarch64-linux-android/libzstd.so ] ; then
+  echo "WARNING: The file $TOOLCHAIN/sysroot/usr/lib/aarch64-linux-android/libzstd.so is required for zstd support but missing"
+  ERRORS_FOUND=${__TRUE}
+fi
+
+if [ ${ERRORS_FOUND} = ${__TRUE} ] ; then
+  echo
+  printf "Press return to continue the configure script "
+  read USER_INPUT
+fi
+
+# known projects for LLVM:
+#
+#  -DLLVM_ENABLE_PROJECTS="clang;lld;bolt;clang-tools-extra;libclc;openmp;polly;flang;" \
+
+${PREFIX} cmake -G "Unix Makefiles" \
+  -DLLVM_TARGETS_TO_BUILD="AArch64" \
+  -DCMAKE_SYSTEM_PROCESSOR=aarch64 \
+  -DCMAKE_SYSTEM_NAME=Android \
+  -DCMAKE_TOOLCHAIN_FILE=$NDK/build/cmake/android.toolchain.cmake \
+  -DANDROID_PLATFORM=android-21 \
+  -DANDROID_ABI=arm64-v8a \
+  -DANDROID_STL=c++_shared \
+  -DLLVM_ENABLE_RTTI=ON \
+  -DLLVM_ENABLE_EH=ON \
+  -DLLVM_LINK_LLVM_DYLIB=ON \
+  -DLLVM_ENABLE_ZSTD=ON \
+  -DCMAKE_C_COMPILER=$NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/clang \
+  -DCMAKE_CXX_COMPILER=$NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ \
+  -DCMAKE_C_FLAGS="-I$NDK/sysroot/usr/include ${CFLAGS} " \
+  -DCMAKE_CXX_FLAGS="-I$NDK/sysroot/usr/include ${CFLAGS} " \
+  -DCMAKE_SYSROOT=$NDK/toolchains/llvm/prebuilt/linux-x86_64/sysroot \
+  -DCMAKE_EXE_LINKER_FLAGS="-L$NDK/sysroot/usr/lib -fuse-ld=lld ${LDFLAGS} " \
+  -DANDROID_LINKER_FLAGS="-fuse-ld=lld  ${LDFLAGS}"  \
+  -DCMAKE_CXX_FLAGS="-stdlib=libc++ ${CFLAGS}" \
+  -DCMAKE_INSTALL_PREFIX=/system/usr/clang19 \
+  -DLLVM_ENABLE_PROJECTS="clang;lld;" \
+  -DLLVM_DEFAULT_TARGET_TRIPLE=aarch64-linux-android \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_CXX_STANDARD=17 \
+  ../llvm
+ 
+echo 
+echo "The config for using zstd in the config file CMakeCache.txt is now"
+echo
+grep -E "^LLVM_USE_STATIC_ZSTD:|^zstd_INCLUDE_DIR:|^zstd_LIBRARY:|^zstd_STATIC_LIBRARY:"  CMakeCache.txt
+echo
+
+# Note: these CMAKE variables are NOT supported by the cmake config for clang:
+#
+#  -DZSTD_INCLUDE_DIR=/data/develop/android/sysroot/usr/include/ \
+#  -DZSTD_LIBRARY=/data/develop/android/sysroot/usr/lib/ \
+
+
