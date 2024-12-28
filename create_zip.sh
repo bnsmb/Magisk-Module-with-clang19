@@ -2,7 +2,7 @@ ZIPFILE="../$( grep "^id=" module.prop | cut -f2 -d "=" )_$( grep "^version=" mo
 echo ""
 echo "*** Creating the ZIP file \"${ZIPFILE}\" ..."
 [ -r "${ZIPFILE}" ] && \rm -r "${ZIPFILE}"
-zip -y -r "${ZIPFILE}" .
+zip -x ".git/*" -y -r "${ZIPFILE}" .
 
 echo ""
 ls -l "${ZIPFILE}"
