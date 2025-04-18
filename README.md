@@ -1,5 +1,7 @@
 # Magisk-Module-with-clang19
-This repository contains a Magisk Module with clang 19 for arm64 CPUs
+This repository contains a Magisk Module with **clang 19** for **arm64** CPUs
+
+This Magisk module contains the binaries from **clang version 19**, **GNU make**, **pkg-config**, **pkgconf**, and the files from the Android **NDK r27b** necessary to compile libraries and binaries for arm64 CPUs.
 
 To create the ZIP file with the Magisk Module, clone or download the repository and execute the script
 ```
@@ -37,7 +39,7 @@ to init the environment for the **clang19**. This scripts defines all necessary 
 Source Code used to create the binaries
 ---------------------------------------
 
-The repo with the source code for **clang** is:
+The repository with the source code for **clang** is:
 
 [https://android.googlesource.com/toolchain/llvm-project](https://android.googlesource.com/toolchain/llvm-project)
 
@@ -55,12 +57,18 @@ The Android NDKs are available here:
 
 [https://developer.android.com/ndk/downloads](https://developer.android.com/ndk/downloads)
 
+
 The source code for the **make** binary is available here:
 
 [https://ftp.gnu.org/gnu/make/](https://ftp.gnu.org/gnu/make/)
 
 
-The source code for **pkg-config** is avialable here:
+The source code for **pkg-config** is available here:
 
 [https://pkgconfig.freedesktop.org/releases/](https://pkgconfig.freedesktop.org/releases/)
+
+
+The source code for **pkgconf** is available here
+
+[https://github.com/pkgconf/pkgconf](https://github.com/pkgconf/pkgconf)
 

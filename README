@@ -1,4 +1,4 @@
-This Magisk module contains clang19, GNU make 4.4.1, pkg-config 0.29, and the files necessary from the Android NDK r27b for arm64 CPUs
+This Magisk module contains clang19, GNU make 4.4.1, pkg-config 0.29, pkgconf 2.3.0 and the files necessary from the Android NDK r27b for arm64 CPUs
 
 
 The clang19 files are in the directory 
@@ -6,7 +6,7 @@ The clang19 files are in the directory
 /system/usr/clang19
 
 
-The clang19, make, and pkg-config binaries are in the directory
+The clang19, make, pkg-config, and pkgconf binaries are in the directory
 
 /system/usr/clang19/bin
 
@@ -20,11 +20,33 @@ The sysroot from the NDK is in the directory
 /system/usr/ndk/r27b/sysroot
 
 
-Use 
+Use the command
 
-. /system/bin/init_clang19_env
+source /system/bin/init_clang19_env
 
 to init the environment for the clang19. This scripts defines all necessary environment variables (including the PATH variable) to use the clang.
+
+
+The script init_clang19_env executes the script 
+
+/data/local/tmp/local_init_clang19_env
+
+if it exists (use the parameter "no_user" to disable the execution of this script)
+
+
+
+To use pkgconf instead of pkg-config set the variable PKG_CONFIG:
+
+export PKG_CONFIG=/system/usr/clang19/bin/pkgconf
+
+
+
+Use the command
+
+/system/bin/init_clang19_env help
+
+to print the usage help for the init script
+
 
 
 Source Code used to create the binaries
@@ -41,7 +63,7 @@ See the file
 source/myconfigure 
 
 in the Magisk Module for the cmake options used to prepare the build process for the clang19.
-The clang19 binaries were compiled on a machine running the Linux OS with Cross Compiler from the Android NDK r27b
+The clang19 binaries were compiled on a machine running the Linux OS withi the Cross Compiler from the Android NDK r27b
 
 
 The Android NDKs are available here:
@@ -51,12 +73,19 @@ https://developer.android.com/ndk/downloads
 
 The source code for the make binary is available here:
 
-https://ftp.gnu.org/gnu/make/:0
+https://ftp.gnu.org/gnu/make
 
 
-The source code for pkg-config is avialable here:
+The source code for pkg-config is available here:
 
 https://pkgconfig.freedesktop.org/releases/
+
+
+The source code for pkgconf is available here
+
+https://github.com/pkgconf/pkgconf
+
+
 
 
 History
@@ -71,4 +100,12 @@ History
 12.11.2024 v1.0.2
   the contents of the environment variable CXX set in init_clang19_env was wrong -- fixed
 
- 
+18.01.2025 v1.1.0
+  added pkgconf 2.3.0
+
+14.04.2025 v1.2.0
+  use symbolic links for various clang19 binaries
+  added support for a user defined init script
+  corrected typos and minor errors in the init script
+  the default API version defined by the init script is now 31
+
