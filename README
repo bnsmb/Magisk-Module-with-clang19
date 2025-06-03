@@ -109,3 +109,6 @@ History
   corrected typos and minor errors in the init script
   the default API version defined by the init script is now 31
 
+03.06.2025 v1.2.1
+  fixed an error in the statement to define the variable NDK_DIR in the file init_clang19_env
+
