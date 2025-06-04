@@ -1,8 +1,8 @@
 #!/system/bin/sh
 #
-# Script to init the environment vor clang
+# Script to init the environment for clang
 #
-# Usage: see below or execute the script with the parameter "--help" 
+# Usage: see below or execute the script with the parameter "--help"
 #
 #
 # History
@@ -16,6 +16,9 @@
 #    added support for a user defined init script
 #    added functions for Logging and changing environment variables
 #    default API version is now 31
+#  04.06.2025 v1.2.0 /bs
+#    if 'uname -m" returns "armv8*" the script sets CPU_TYPE now to aarch64
+#    the script now prints warning messages if the directories from the NDK are missing
 #
 
 __TRUE=0
@@ -28,7 +31,6 @@ STANDALONE_SCRIPT=${__FALSE}
 CONTINUE=${__TRUE}
 
 PRINT_EXAMPLES=${__FALSE}
-
 
 # ---------------------------------------------------------------------
 # the variable TMPDIR is used by the /system/bin/sh to get the default directory for temporary files
@@ -67,24 +69,24 @@ function LogDebug {
 #
 # Usage: add_string {environment_variable} {new_string} [separator] [c|b|e]
 #
-# Default separator is a blank if there is at least one blank in the existing value. 
+# Default separator is a blank if there is at least one blank in the existing value.
 # In all other cases the default separator is the colon (:).
 #
 # The known values for the 4th parameter are:
 #   c - check only: do NOT change valiue of the variable
 #   b - add the new value before the existing value
 #   e - add the new value after the existing value (this is the default)
-# 
+#
 function add_string {
 
   if [ "${DEBUG}"x != ""x ] ; then
     LogDebug "Executing \"$0 $*\" "
     set -x
   fi
-  
+
   typeset ENV_VAR=""
   typeset NEW_VALUE=""
-  typeset SEPARATOR="" 
+  typeset SEPARATOR=""
   typeset POSITION="e"
 
   typeset CUR_VALUE=""
@@ -95,13 +97,13 @@ function add_string {
   if [ $# -ge 2 -a $# -le 4 ] ; then
     ENV_VAR="$1"
     NEW_VALUE="$2"
-    
+
     eval CUR_VALUE="\"\$${ENV_VAR}\""
 
     if [ $# -eq 4 ] ; then
 
-      case $4 in 
-      
+      case $4 in
+
         c | check )
           POSITION=""
           ;;
@@ -114,20 +116,20 @@ function add_string {
           ;;
 
         * )
-          LogError "$0 - unknown value for the action parameter: \"$4\" " 
+          LogError "$0 - unknown value for the action parameter: \"$4\" "
           THISRC=${__FALSE}
           ;;
       esac
     fi
-    
+
     if [ ${THISRC} = ${__TRUE} ] ; then
       if [ $# -eq 3 ] ; then
         SEPARATOR="$3"
       else
         echo "${CUR_VALUE}" | grep " " >/dev/null && SEPARATOR=" " || SEPARATOR=":"
       fi
-    
-      echo "${SEPARATOR}${CUR_VALUE}${SEPARATOR}"  | grep -- "${SEPARATOR}${NEW_VALUE}${SEPARATOR}" >/dev/null    
+
+      echo "${SEPARATOR}${CUR_VALUE}${SEPARATOR}"  | grep -- "${SEPARATOR}${NEW_VALUE}${SEPARATOR}" >/dev/null
       if [ $? -ne 0 ] ; then
         case  ${POSITION} in
           e )
@@ -137,7 +139,7 @@ function add_string {
             eval export "${ENV_VAR}=\"${NEW_VALUE}${SEPARATOR}\${CUR_VALUE}\""
             ;;
         esac
-                          
+
         THISRC=${__TRUE}
       fi
     fi
@@ -145,7 +147,7 @@ function add_string {
     LogError "$0 - wrong number of parameter: \"$*\" "
     THISRC=${__FALSE}
   fi
-  
+
   return ${THISRC}
 }
 
@@ -168,21 +170,22 @@ done
 
 if [ ${CONTINUE} = ${__TRUE} ] ; then
 
+
   while [ $# -ne 0 ] ; do
     CUR_PARAMETER="$1"
     shift
-    
+
     case ${CUR_PARAMETER} in
- 
+
       -h | --help | help )
         cat <<EOT
-        
+
 Usage: . $0 [-h|--help] [init] [no_user] [var=value] [examples]
- 
+
 init        - clear the used enviroment variables at script start
 no_user     - do not execute the user defined init script
 var=value   - set the environment variable "var" to "value" at start of the script
-examples    - print compile examples 
+examples    - print compile examples
 
 EOT
 
@@ -201,7 +204,7 @@ EOT
         LogMsg "Clearing all used variables ..."
         unset CFLAGS CPPFLAGS CXXFLAGS LDFLAGS  API SYSROOT TARGET_ROOT CPU_TYPE CLANG_DIR CLANG_VERSION NDK_DIR
         ;;
-    
+
       *=* )
         eval ${CUR_PARAMETER}
         if [ $? -ne 0 ] ; then
@@ -221,20 +224,24 @@ EOT
     MESSAGE="WARNING: The script $0 must be sourced in"
     n="${#MESSAGE}"
     (( n = n + 2 ))
-    THIS_MESSAGE="$( 
-  printf "\n" 
+    THIS_MESSAGE="$(
+  printf "\n"
   printf '%*s\n' "$n" '' | tr ' ' '*'
   printf " ${MESSAGE} \n"
   printf '%*s\n' "$n" '' | tr ' ' '*'
-  printf "\n" 
+  printf "\n"
                   )"
 
     LogMsg "${THIS_MESSAGE}"
-    
-    STANDALONE_SCRIPT=${__TRUE}                 
+
+    STANDALONE_SCRIPT=${__TRUE} 
   fi
 
   CPU_TYPE="${CPU_TYPE:=$( uname -m )}"
+  if [[ ${CPU_TYPE} == armv8* ]] ; then
+    LogMsg "The CPU type is \"${CPU_TYPE}\" - using the directories for the CPU type \"aarch64\" "
+    CPU_TYPE="aarch64"
+  fi
 
   TARGET_ROOT="${TARGET_ROOT:=/data/local/tmp/develop/sysroot}"
 
@@ -249,23 +256,27 @@ EOT
   SYSROOT="${SYSROOT:=${NDK_DIR}/sysroot}"
 
   API="${API:=31}"
-   
+
 # ---------------------------------------------------------------------
 
   LIB_DIRS=""
 
   OBJ_DIRS=""
-  
+
   INCLUDE_DIRS="${CLANG_DIR}/include"
 
   BIN_DIRS="${CLANG_DIR}/bin"
 
   SYSROOT_CONFIGURE_OPTION=""
- 
+
   if [ "${NDK_DIR}"x != ""x ] ; then
     if [ -d  "${NDK_DIR}" ] ; then
 
-      INCLUDE_DIRS="${INCLUDE_DIRS} ${NDK_DIR}/include"
+      if [ -d "${NDK_DIR}/include" ] ; then
+        INCLUDE_DIRS="${INCLUDE_DIRS} ${NDK_DIR}/include"
+      else
+        LogWarning "The directory \"${SYSROOT_LIB_DIR}\" does not exist"
+      fi
 
     fi
   fi
@@ -280,19 +291,25 @@ EOT
       if [ -d ${SYSROOT_LIB_DIR}/${API} ] ; then
         LIB_DIRS="${LIB_DIRS} ${SYSROOT_LIB_DIR}/${API}"
         OBJ_DIRS="${OBJ_DIRS} ${SYSROOT_LIB_DIR}/${API}"
+      else
+        LogWarning "The directory \"${SYSROOT_LIB_DIR}/${API}\" does not exist"
       fi
 
       if [ -d ${SYSROOT_LIB_DIR}/ ] ; then
         LIB_DIRS="${LIB_DIRS} ${SYSROOT_LIB_DIR}"
+      else
+        LogWarning "The directory \"${SYSROOT_LIB_DIR}\" does not exist"
       fi
-      
-      
-      [ -d ${SYSROOT}/usr/bin ] && BIN_DIRS="${BIN_DIRS} ${SYSROOT}/usr/bin"
+
+
+      if [ -d ${SYSROOT}/usr/bin ] ; then
+        BIN_DIRS="${BIN_DIRS} ${SYSROOT}/usr/bin"
+      fi
 
       SYSROOT_CONFIGURE_OPTION="--sysroot ${SYSROOT}"
 
     else
-      LogWarning "The sysroot directory ${SYSROOT} does not exist"	  
+      LogWarning "The sysroot directory ${SYSROOT} does not exist"	
     fi
   fi
 
@@ -311,7 +328,7 @@ fi
 # ---------------------------------------------------------------------
 
 if [ ${CONTINUE} = ${__TRUE} ] ; then
- 
+
   LogMsg
   LogMsg "Preparing the clang environment for creating binaries for the CPU type ${CPU_TYPE}"
 
@@ -321,14 +338,14 @@ if [ ${CONTINUE} = ${__TRUE} ] ; then
       BIN_DIRS="${BIN_DIRS} ${TARGET_ROOT}/usr/bin"
       LIB_DIRS="${LIB_DIRS} ${TARGET_ROOT}/usr/lib"
     else
-      LogMsg "The target root directory ${TARGET_ROOT} does not exist"  
+      LogMsg "The target root directory ${TARGET_ROOT} does not exist"
     fi
   fi
-  
+
   LogMsg
-  
+
   LogMsg "$( printf "%-90s %s\n\n" "Using clang ${CLANG_VERSION}" )"
-  
+
   if [ "${NDK_DIR}"x != ""x ] ; then
     LogMsg "$( printf "%-90s %s" "Using the NDK ${NDK_DIR}" "(environment variable NDK_DIR)" )"
   fi
@@ -341,17 +358,17 @@ if [ ${CONTINUE} = ${__TRUE} ] ; then
     LogMsg "$( printf "%-90s %s" "Using the target root directory ${TARGET_ROOT}" "(environment variable TARGET_ROOT)" )"
   fi
 
-  LogMsg 
-    
+  LogMsg
+
   for CUR_DIR in ${BIN_DIRS} ; do
-    
+
     if [ ! -d "${CUR_DIR}" ] ; then
       LogWarning "The directory \"${CUR_DIR}\" does not exist"
     fi
     add_string PATH "${CUR_DIR}" ":" "b"
   done
- 
- 
+
+
   for CUR_DIR in ${INCLUDE_DIRS} ; do
     if [ ! -d "${CUR_DIR}" ] ; then
       LogWarning "The directory \"${CUR_DIR}\" does not exist"
@@ -360,10 +377,10 @@ if [ ${CONTINUE} = ${__TRUE} ] ; then
     add_string CFLAGS "-I${CUR_DIR}" " "
     add_string CPPFLAGS "-I${CUR_DIR}" " "
     add_string CXXFLAGS "-I${CUR_DIR}" " "
-  
+
   done
 
- 
+
   for CUR_DIR in ${LIB_DIRS} ; do
     if [ ! -d "${CUR_DIR}" ] ; then
       LogWarning "The directory \"${CUR_DIR}\" does not exist"
@@ -380,16 +397,16 @@ if [ ${CONTINUE} = ${__TRUE} ] ; then
     fi
 
     add_string LDFLAGS "-B${CUR_DIR}/" " "
-    
-  done
-  
 
-  if [ "${SYSROOT_CONFIGURE_OPTION}"x != ""x ] ; then 
-    
+  done
+
+
+  if [ "${SYSROOT_CONFIGURE_OPTION}"x != ""x ] ; then
+
     add_string CFLAGS "--sysroot=${SYSROOT}" " "
     add_string CXXFLAGS "--sysroot=${SYSROOT}" " "
     add_string LDFLAGS "--sysroot=${SYSROOT}" " "
-    
+
   fi
 
   add_string LDFLAGS "-lc" " "
@@ -414,12 +431,12 @@ if [ ${CONTINUE} = ${__TRUE} ] ; then
 
   LogMsg "
 Evironment variables used:
-  
-$(  
+
+$(
   printf "\n"
   printf "%-20s %s\n" "PATH is now:"             "${PATH}"
   printf "\n"
-  
+
   printf "%-20s %s\n" "LD_LIBRARY_PATH:"         "${LD_LIBRARY_PATH}"
   printf "\n"
   printf "%-20s %s\n" "API is now:"              "${API}"
@@ -443,7 +460,7 @@ $(
     eval CUR_VALUE="\$$CUR_VAR"
     LogMsg "$( printf "%-20s %s\n" "${CUR_VAR} is now:" "${CUR_VALUE}" )"
   done
- 
+
   LogMsg
 
   if [ ! -d /tmp ] ; then
@@ -455,20 +472,20 @@ $(
         LogWarning "The directories /tmp and /data/local/tmp do not exist - please set the variable TMP before using clang"
       fi
     fi
-  fi 
+  fi
 
   LogMsg "Checking the clang binary ..."
   LogMsg
-  
+
   ${CLANG} --version
   THISRC=$?
-  
+
   LogMsg
-  
+
   if [ ${THISRC} != 0 ] ; then
     LogWarning "Executing \"${CLANG} --version\" ended with RC=${THISRC}"
   fi
-  
+
   if [ $API -lt 30 ] ; then
     LogWarning
     LogWarning "Compling C++ program using API version less then 30 will probably not work"
@@ -484,7 +501,7 @@ $(
 ${USER_DEFINED_INIT_SCRIPT} found -- now executing that file ...
 "
       source "${USER_DEFINED_INIT_SCRIPT}"
-      
+
       LogMsg "
 ... ${USER_DEFINED_INIT_SCRIPT} executed
 "

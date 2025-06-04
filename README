@@ -112,3 +112,7 @@ History
 03.06.2025 v1.2.1
   fixed an error in the statement to define the variable NDK_DIR in the file init_clang19_env
 
+04.06.2025 v1.2.2
+  add minor fixes to the script init_clang19_env
+
+
