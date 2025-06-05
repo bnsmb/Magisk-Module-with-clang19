@@ -114,5 +114,7 @@ History
 
 04.06.2025 v1.2.2
   add minor fixes to the script init_clang19_env
+  if 'uname -m" returns "armv8*" the init script sets CPU_TYPE now to aarch64
+
 
 
