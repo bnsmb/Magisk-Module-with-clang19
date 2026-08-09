@@ -52,7 +52,7 @@ MODULE_DESC="${MODULE_NAME} ${MODULE_VERSION}"
 
 CLANG_VERSION="19"
 
-SAMPLE_PROGRAMS="helloworld_in_c.c helloworld_in_c++.cpp"
+SAMPLE_PROGRAMS="helloworld_in_c.c helloworld_in_c++.cpp helloworld_in_assembler.s"
 
 # -----------------------------------------------------------------------------
 #
