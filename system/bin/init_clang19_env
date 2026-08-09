@@ -19,6 +19,14 @@
 #  04.06.2025 v1.2.0 /bs
 #    if 'uname -m" returns "armv8*" the script sets CPU_TYPE now to aarch64
 #    the script now prints warning messages if the directories from the NDK are missing
+#  27.07.2026 v1.2.1 /bs
+#    added code to modify the prompt (PS1)
+#  30.07.2026 v1.2.2 /bs
+#    added the include dir ${SYSROOT}/usr/include/aarch64-linux-android to the CFLAGS
+#  08.08.2026 v1.2.3 /bs
+#    the script now executes "exec bash" or "exec sh" if called as script (not sourced in)
+#    the default Android NDK vesion is now r27d
+#    added the alias cp_crt_libs
 #
 
 __TRUE=0
@@ -243,13 +251,15 @@ EOT
     CPU_TYPE="aarch64"
   fi
 
+  DEFAULT_NDK_VERSION="$( ls -1t /system/usr/ndk | sort  | tail -1 )"
+
   TARGET_ROOT="${TARGET_ROOT:=/data/local/tmp/develop/sysroot}"
 
   CLANG_VERSION="${CLANG_VERSION:=19}"
 
   CLANG_DIR="${CLANG_DIR:=/system/usr/clang${CLANG_VERSION}}"
 
-  NDK_VERSION="${NDK_VERSION:=r27b}"
+  NDK_VERSION="${NDK_VERSION:=${DEFAULT_NDK_VERSION}}"
 
   NDK_DIR="${NDK_DIR:=/system/usr/ndk/${NDK_VERSION}}"
 
@@ -258,6 +268,13 @@ EOT
   API="${API:=31}"
 
 # ---------------------------------------------------------------------
+
+
+  if [ "${NDK_VERSION}"x = ""x ] ; then
+    echo "WARNING: No Android NDK found"
+  elif [ ! -d ${NDK_DIR} ] ; then
+    echo "WARNING: The directory with the Android NDK, \"${NDK_DIR}\" does not exist"
+  fi
 
   LIB_DIRS=""
 
@@ -275,7 +292,7 @@ EOT
       if [ -d "${NDK_DIR}/include" ] ; then
         INCLUDE_DIRS="${INCLUDE_DIRS} ${NDK_DIR}/include"
       else
-        LogWarning "The directory \"${SYSROOT_LIB_DIR}\" does not exist"
+        LogWarning "The directory \"${INCLUDE_DIRS} ${NDK_DIR}/include\" does not exist"
       fi
 
     fi
@@ -288,6 +305,13 @@ EOT
 
       INCLUDE_DIRS="${INCLUDE_DIRS} ${SYSROOT}/usr/include"
 
+      if [ -d "${SYSROOT}/usr/include/aarch64-linux-android" ] ; then
+        INCLUDE_DIRS="${INCLUDE_DIRS} ${SYSROOT}/usr/include/aarch64-linux-android"
+      else
+        LogWarning "The directory \"${SYSROOT}/usr/include/aarch64-linux-android\" does not exist"
+      fi
+
+      
       if [ -d ${SYSROOT_LIB_DIR}/${API} ] ; then
         LIB_DIRS="${LIB_DIRS} ${SYSROOT_LIB_DIR}/${API}"
         OBJ_DIRS="${OBJ_DIRS} ${SYSROOT_LIB_DIR}/${API}"
@@ -430,7 +454,7 @@ if [ ${CONTINUE} = ${__TRUE} ] ; then
 
 
   LogMsg "
-Evironment variables used:
+Environment variables used:
 
 $(
   printf "\n"
@@ -527,3 +551,12 @@ clang++ \${CXXFLAGS} \${LDFLAGS}  -o helloworld_in_c++ ./helloworld_in_c++.cpp &
 "
 
 fi
+
+alias cp_crt_libs=" cp /system/usr/ndk/r27d/sysroot/usr/lib/aarch64-linux-android/${API}/crt*so.o ."
+
+echo "$PS1" | egrep "clang19 vdisk" >/dev/null || export PS1="[clang19 vdisk env] $PS1"
+
+SHELL="$( which bash || which sh )"
+
+[[ $0 == *init_clang19_env* ]] && exec ${SHELL}
+
