@@ -1,4 +1,4 @@
-This Magisk module contains clang19, GNU make 4.4.1, pkg-config 0.29, pkgconf 2.3.0 and the files necessary from the Android NDK r27b for arm64 CPUs
+This Magisk module contains clang19, GNU make 4.4.1, pkg-config 0.29, pkgconf 2.3.0 and the files necessary from the Android NDK r27d for arm64 CPUs
 
 
 The clang19 files are in the directory 
@@ -13,11 +13,11 @@ The clang19, make, pkg-config, and pkgconf binaries are in the directory
 
 The files from the NDK are in the directory
 
-/system/usr/ndk/r27b
+/system/usr/ndk/r27d
 
 The sysroot from the NDK is in the directory
 
-/system/usr/ndk/r27b/sysroot
+/system/usr/ndk/r27d/sysroot
 
 
 Use the command
@@ -63,7 +63,7 @@ See the file
 source/myconfigure 
 
 in the Magisk Module for the cmake options used to prepare the build process for the clang19.
-The clang19 binaries were compiled on a machine running the Linux OS withi the Cross Compiler from the Android NDK r27b
+The clang19 binaries were compiled on a machine running the Linux OS with the Cross Compiler from the Android NDK r27b
 
 
 The Android NDKs are available here:
@@ -116,5 +116,17 @@ History
   add minor fixes to the script init_clang19_env
   if 'uname -m" returns "armv8*" the init script sets CPU_TYPE now to aarch64
 
+18.10.2025 v1.2.3
+  removed the x86 library system/usr/ndk/r27d/lib/LLVMPolly.so
 
+09.08.2026 v1.2.4
+  added the symbolic link nm -> ./llvm-nm
+  added the symbolic link cpp -> ./clang-cpp
+  added the symbolic link strip -> ./llvm-strip
+  added the symbolic link strings -> ./llvm-strings
+  added the symbolic link cc -> ./clang
+  added the symbolic link readelf -> ./llvm-readelf
+  updated the script system/bin/init_clang19_env 
+  added the Android NDK to version r27d
+  added the test script system/bin/test_clang.sh
 
