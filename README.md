@@ -1,7 +1,7 @@
 # Magisk-Module-with-clang19
 This repository contains a Magisk Module with **clang 19** for **arm64** CPUs
 
-This Magisk module contains the binaries from **clang version 19**, **GNU make**, **pkg-config**, **pkgconf**, and the files from the Android **NDK r27b** necessary to compile libraries and binaries for arm64 CPUs.
+This Magisk module contains the binaries from **clang version 19**, **GNU make**, **pkg-config**, **pkgconf**, and the files from the Android **NDK r27d** necessary to compile libraries and binaries for arm64 CPUs.
 
 To create the ZIP file with the Magisk Module, clone or download the repository and execute the script
 ```
@@ -22,11 +22,11 @@ The **clang19**, **make**, and **pkg-config** binaries are in the directory
 
 The files from the NDK are in the directory
 
-**/system/usr/ndk/r27b**
+**/system/usr/ndk/r27d**
 
 The sysroot from the NDK is in the directory
 
-**/system/usr/ndk/r27b/sysroot**
+**/system/usr/ndk/r27d/sysroot**
 
 
 Use 
