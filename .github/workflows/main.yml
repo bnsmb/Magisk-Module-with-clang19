@@ -20,7 +20,7 @@ on:
         description: 'Release title'
         required: true
         type: string
-        default: ''
+        default: 'The Magisk Module with clang19 for Android on arm64 CPUs'
       release_notes:
         description: 'Release notes'
         required: false
