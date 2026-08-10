@@ -12,8 +12,9 @@ from the repository
 
 Or download the ZIP file with the Magisk Module  on the release page in this repository:
 
-clang19_19.0.0git-v1.2.4.zip
+**clang19_19.0.0git-v1.2.4.zip**
 
+---
 
 **Short documentation for the Magisk Module with clang 19**
 
@@ -38,14 +39,14 @@ Use
 ```
 . /system/bin/init_clang19_env
 ```
-to init the environment for the **clang19**. This scripts defines all necessary environment variables (including the PATH variable) to use the clang.
+to init the environment for the **clang19**. This scripts defines all necessary environment variables (including the PATH variable) to use the **clang**.
 
 
 Use
 ```
 /system/bin/test_clang.sh
 ```
-to compile the test programs for ***clang*** and ***clang++***
+to compile the test programs for **clang** and **clang++**
 
 
 
