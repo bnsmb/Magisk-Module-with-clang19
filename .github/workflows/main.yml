@@ -80,12 +80,14 @@ jobs:
         id: create_zip
         run: |
           # Source the script to execute it in the current shell
-          source ./create_zip.sh
+          source ./create_zip.sh >/dev/null
           
           # Get the filename of the created zip
-          ZIP_FILE=$(ls -t *.zip 2>/dev/null | head -1)
+          ZIP_FILE="${ZIPFILE}"
+
+          echo "The ZIP file is: \"${ZIP_FILE}\" "
           
-          if [ -z "$ZIP_FILE" ]; then
+          if [ ! -r "$ZIP_FILE" ]; then
             echo "No ZIP file created!"
             exit 1
           fi
