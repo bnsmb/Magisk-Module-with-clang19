@@ -127,6 +127,6 @@ History
   added the symbolic link cc -> ./clang
   added the symbolic link readelf -> ./llvm-readelf
   updated the script system/bin/init_clang19_env 
-  added the Android NDK to version r27d
-  added the test script system/bin/test_clang.sh
+  updated the Android NDK to version r27d
+  added the test cript system/bin/test_clang.sh
 
